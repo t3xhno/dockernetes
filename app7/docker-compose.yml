@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  be:
+    # build: ./backend
+    build:
+      context: ./backend
+      # If dockerfile is named differently
+      dockerfile: Dockerfile
+      # args:
+      #   some-arg: 1
+    ports:
+      - "80:80"
+    volumes:
+      - logs:/app/logs
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./env/be.env
+    depends_on:
+      - bazica
+    # container_name: be
+
+  fe:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src
+    stdin_open: true
+    tty: true
+    depends_on:
+      - be
+
+
+  bazica:
+    image: "mongo"
+    # --rm and -d flags are default for compose
+    volumes:
+      - data:/data/db
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME=tex
+    #   MONGO_INITDB_ROOT_PASSWORD=password
+    env_file:
+      - ./env/mongo.env
+    # We don't need to set networks manually, as compose will automatically
+    # put all it's containers in the same network
+    # We can add a network if we want to make a container part of an external network, too
+    # networks:
+    #   - network-name
+
+# Need to specify here all named volumes used in the compose
+volumes:
+  data:
+  logs:
